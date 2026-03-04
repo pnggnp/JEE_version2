@@ -1,207 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jakarta Concurrency Utilities — Presentation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
 
-<!-- ========== SLIDE NAVIGATION ========== -->
-<div class="progress-bar" id="progressBar"></div>
-<div class="slide-counter" id="slideCounter">1 / 18</div>
-<div class="nav-hint" id="navHint">Press <kbd>→</kbd> or click to navigate</div>
+    <!-- ========== SLIDE NAVIGATION ========== -->
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="slide-counter" id="slideCounter">1 / 21</div>
+    <div class="nav-hint" id="navHint">Navigate with arrows or keys</div>
 
-<!-- ========== SLIDES CONTAINER ========== -->
-<div class="slides-wrapper" id="slidesWrapper">
+    <div class="side-nav left" id="prevBtn" title="Previous Slide">
+        <svg viewBox="0 0 24 24">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+        </svg>
+    </div>
+    <div class="side-nav right" id="nextBtn" title="Next Slide">
+        <svg viewBox="0 0 24 24">
+            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+        </svg>
+    </div>
 
-    <!-- ==================== SLIDE 1: TITLE ==================== -->
-    <section class="slide slide-title active" data-bg="dark">
-        <div class="particle-bg" id="particles"></div>
-        <div class="slide-content center-content">
-            <div class="badge animate-pop">Jakarta EE</div>
-            <h1 class="hero-title animate-slide-up">
-                <span class="gradient-text">Concurrency</span>
-                <br>Utilities
-            </h1>
-            <p class="subtitle animate-fade-in">Mastering server-side multi-threading in enterprise Java</p>
-            <div class="team-badge animate-fade-in-delay">
-                <span class="pulse-dot"></span>
-                Presented by Team of 6
-            </div>
-        </div>
-    </section>
+    <!-- ========== SLIDES CONTAINER ========== -->
+    <div class="slides-wrapper" id="slidesWrapper">
 
-    <!-- ==================== SLIDE 2: AGENDA ==================== -->
-    <section class="slide" data-bg="dark">
-        <div class="slide-content">
-            <h2 class="section-title">📋 What We'll Cover Today</h2>
-            <div class="agenda-grid">
-                <div class="agenda-item" style="--delay: 0.1s">
-                    <div class="agenda-number">01</div>
-                    <div class="agenda-text">
-                        <strong>Introduction</strong>
-                        <span>Why Jakarta Concurrency?</span>
-                    </div>
-                </div>
-                <div class="agenda-item" style="--delay: 0.2s">
-                    <div class="agenda-number">02</div>
-                    <div class="agenda-text">
-                        <strong>ManagedExecutorService</strong>
-                        <span>Controlled async execution</span>
-                    </div>
-                </div>
-                <div class="agenda-item" style="--delay: 0.3s">
-                    <div class="agenda-number">03</div>
-                    <div class="agenda-text">
-                        <strong>ManagedScheduledExecutorService</strong>
-                        <span>Scheduled & periodic tasks</span>
-                    </div>
-                </div>
-                <div class="agenda-item" style="--delay: 0.4s">
-                    <div class="agenda-number">04</div>
-                    <div class="agenda-text">
-                        <strong>Async & Scheduled Tasks</strong>
-                        <span>Real patterns & examples</span>
-                    </div>
-                </div>
-                <div class="agenda-item" style="--delay: 0.5s">
-                    <div class="agenda-number">05</div>
-                    <div class="agenda-text">
-                        <strong>Secure Thread Management</strong>
-                        <span>Safety on the server</span>
-                    </div>
-                </div>
-                <div class="agenda-item" style="--delay: 0.6s">
-                    <div class="agenda-number">06</div>
-                    <div class="agenda-text">
-                        <strong>Use Cases</strong>
-                        <span>Batch, notifications & more</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+        <!-- ==================== SLIDE 1: TITLE ==================== -->
+        <section class="slide slide-title active" data-bg="dark">
+            <div class="particle-bg" id="particles"></div>
+            <div class="slide-content center-content">
+                <div class="badge animate-pop">Jakarta EE</div>
+                <h1 class="hero-title animate-slide-up">
+                    <span class="gradient-text">Concurrency</span>
+                    <br>Utilities
+                </h1>
+                <p class="subtitle animate-fade-in">Mastering server-side multi-threading in enterprise Java</p>
 
-    <!-- ==================== SLIDE 3: THE PROBLEM ==================== -->
-    <section class="slide" data-bg="gradient-red">
-        <div class="slide-content center-content">
-            <div class="emoji-large">🚫</div>
-            <h2 class="section-title">The Problem</h2>
-            <div class="callout-box danger">
-                <h3>Why can't we just use <code>new Thread()</code>?</h3>
-                <p>In a Jakarta EE server, creating raw threads is <strong>dangerous</strong>. The server has no control over them — no security context, no transaction propagation, no lifecycle management.</p>
             </div>
-            <div class="comparison-row">
-                <div class="comparison-card bad">
-                    <div class="card-icon">💀</div>
-                    <h4>Raw Threads</h4>
-                    <ul>
-                        <li>No security context</li>
-                        <li>No JNDI access</li>
-                        <li>Memory leaks</li>
-                        <li>Uncontrolled lifecycle</li>
-                    </ul>
-                </div>
-                <div class="comparison-card good">
-                    <div class="card-icon">✅</div>
-                    <h4>Jakarta Concurrency</h4>
-                    <ul>
-                        <li>Container-managed</li>
-                        <li>Context propagation</li>
-                        <li>Secure & monitored</li>
-                        <li>Resource pooling</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== SLIDE 4: WHAT IS JAKARTA CONCURRENCY ==================== -->
-    <section class="slide" data-bg="dark">
-        <div class="slide-content">
-            <div class="badge">Section 01</div>
-            <h2 class="section-title">What is Jakarta Concurrency?</h2>
-            <div class="info-grid">
-                <div class="info-card glass">
-                    <div class="card-icon">📦</div>
-                    <h3>Part of Jakarta EE</h3>
-                    <p>A standardized API (formerly JSR 236) that provides concurrency utilities specifically designed for enterprise server applications.</p>
-                </div>
-                <div class="info-card glass">
-                    <div class="card-icon">🧵</div>
-                    <h3>Container-Managed</h3>
-                    <p>All threads are created and supervised by the application server. The container controls thread pools, lifecycle, and context propagation.</p>
-                </div>
-                <div class="info-card glass">
-                    <div class="card-icon">🔗</div>
-                    <h3>Context-Aware</h3>
-                    <p>Threads automatically inherit the security context, JNDI namespace, class loader, and other enterprise contexts from the calling thread.</p>
-                </div>
-            </div>
-            <div class="key-point">
-                <span class="key-icon">💡</span>
-                <span>Think of it as <strong>java.util.concurrent</strong> — but redesigned for enterprise servers.</span>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== SLIDE 5: THE 4 MAIN COMPONENTS ==================== -->
-    <section class="slide" data-bg="dark">
-        <div class="slide-content">
-            <h2 class="section-title">The 4 Core Managed Objects</h2>
-            <div class="four-grid">
-                <div class="component-card" style="--accent: #6366f1">
-                    <div class="component-icon">⚡</div>
-                    <h3>ManagedExecutorService</h3>
-                    <p>Submit async tasks (Runnable / Callable)</p>
-                </div>
-                <div class="component-card" style="--accent: #f59e0b">
-                    <div class="component-icon">⏰</div>
-                    <h3>ManagedScheduledExecutorService</h3>
-                    <p>Schedule tasks with delays or at fixed rates</p>
-                </div>
-                <div class="component-card" style="--accent: #10b981">
-                    <div class="component-icon">🏭</div>
-                    <h3>ManagedThreadFactory</h3>
-                    <p>Create container-managed threads</p>
-                </div>
-                <div class="component-card" style="--accent: #ec4899">
-                    <div class="component-icon">🧩</div>
-                    <h3>ContextService</h3>
-                    <p>Capture & propagate contexts to threads</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== SLIDE 6: ManagedExecutorService EXPLAINED ==================== -->
-    <section class="slide" data-bg="gradient-blue">
-        <div class="slide-content">
-            <div class="badge">Section 02</div>
-            <h2 class="section-title">ManagedExecutorService</h2>
-            <div class="split-layout">
-                <div class="split-left">
-                    <h3>📖 What is it?</h3>
-                    <p>A managed version of <code>java.util.concurrent.ExecutorService</code> that the container provides. It executes tasks asynchronously while preserving the enterprise context.</p>
-                    <div class="feature-list">
-                        <div class="feature-item"><span class="check">✓</span> Inject with <code>@Resource</code></div>
-                        <div class="feature-item"><span class="check">✓</span> Submit Runnable & Callable tasks</div>
-                        <div class="feature-item"><span class="check">✓</span> Returns <code>Future&lt;T&gt;</code> for results</div>
-                        <div class="feature-item"><span class="check">✓</span> Container handles thread lifecycle</div>
-                    </div>
-                </div>
-                <div class="split-right">
-                    <div class="code-window">
-                        <div class="code-header">
-                            <span class="dot red"></span>
-                            <span class="dot yellow"></span>
-                            <span class="dot green"></span>
-                            <span class="code-title">OrderService.java</span>
+        <!-- ==================== SLIDE 2: AGENDA ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <h2 class="section-title">📋 What We'll Cover Today</h2>
+                <div class="agenda-grid">
+                    <div class="agenda-item" style="--delay: 0.1s">
+                        <div class="agenda-number">01</div>
+                        <div class="agenda-text">
+                            <span>Why Jakarta Concurrency?</span>
                         </div>
-                        <pre><code><span class="kw">@Stateless</span>
+                    </div>
+                    <div class="agenda-item" style="--delay: 0.2s">
+                        <div class="agenda-number">02</div>
+                        <div class="agenda-text">
+                            <span>Controlled async execution</span>
+                        </div>
+                    </div>
+                    <div class="agenda-item" style="--delay: 0.3s">
+                        <div class="agenda-number">03</div>
+                        <div class="agenda-text">
+                            <span>Scheduled & periodic tasks</span>
+                        </div>
+                    </div>
+                    <div class="agenda-item" style="--delay: 0.4s">
+                        <div class="agenda-number">04</div>
+                        <div class="agenda-text">
+                            <span>Real patterns & examples</span>
+                        </div>
+                    </div>
+                    <div class="agenda-item" style="--delay: 0.5s">
+                        <div class="agenda-number">05</div>
+                        <div class="agenda-text">
+                            <span>Safety on the server</span>
+                        </div>
+                    </div>
+                    <div class="agenda-item" style="--delay: 0.6s">
+                        <div class="agenda-number">06</div>
+                        <div class="agenda-text">
+                            <span>Batch, notifications & more</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 3: THE PROBLEM ==================== -->
+        <section class="slide" data-bg="gradient-red">
+            <div class="slide-content center-content">
+                <div class="emoji-large">🚫</div>
+                <h2 class="section-title">The Problem</h2>
+                <div class="callout-box danger">
+                    <h3>Why can't we just use <code>new Thread()</code>?</h3>
+                    <p>In a Jakarta EE server, creating raw threads is <strong>dangerous</strong>. The server has no
+                        control over them — no security context, no transaction propagation, no lifecycle management.
+                    </p>
+                </div>
+                <div class="comparison-row">
+                    <div class="comparison-card bad">
+                        <div class="card-icon">💀</div>
+                        <h4>Raw Threads</h4>
+                        <ul>
+                            <li>No security context</li>
+                            <li>No JNDI access</li>
+                            <li>Memory leaks</li>
+                            <li>Uncontrolled lifecycle</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-card good">
+                        <div class="card-icon">✅</div>
+                        <h4>Jakarta Concurrency</h4>
+                        <ul>
+                            <li>Container-managed</li>
+                            <li>Context propagation</li>
+                            <li>Secure & monitored</li>
+                            <li>Resource pooling</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 4: WHAT IS JAKARTA CONCURRENCY ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <div class="badge">Section 01</div>
+                <h2 class="section-title">What is Jakarta Concurrency?</h2>
+
+                <div class="info-grid">
+                    <div class="info-card glass">
+                        <div class="card-icon">📦</div>
+                        <h3>Part of Jakarta EE</h3>
+                        <p>A standardized API (formerly JSR 236) that provides concurrency utilities specifically
+                            designed for enterprise server applications.</p>
+                    </div>
+                    <div class="info-card glass">
+                        <div class="card-icon">🧵</div>
+                        <h3>Container-Managed</h3>
+                        <p>All threads are created and supervised by the application server. The container controls
+                            thread pools, lifecycle, and context propagation.</p>
+                    </div>
+                    <div class="info-card glass">
+                        <div class="card-icon">🔗</div>
+                        <h3>Context-Aware</h3>
+                        <p>Threads automatically inherit the security context, JNDI namespace, class loader, and other
+                            enterprise contexts from the calling thread.</p>
+                    </div>
+                </div>
+                <div class="key-point">
+                    <span class="key-icon">💡</span>
+                    <span>Think of it as <strong>java.util.concurrent</strong> — but redesigned for enterprise
+                        servers.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 5: THE 4 MAIN COMPONENTS ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <h2 class="section-title">The 4 Core Managed Objects</h2>
+                <div class="four-grid">
+                    <div class="component-card" style="--accent: #6366f1">
+                        <div class="component-icon">⚡</div>
+                        <h3>ManagedExecutorService</h3>
+                        <p>Submit async tasks (Runnable / Callable)</p>
+                    </div>
+                    <div class="component-card" style="--accent: #f59e0b">
+                        <div class="component-icon">⏰</div>
+                        <h3>ManagedScheduledExecutorService</h3>
+                        <p>Schedule tasks with delays or at fixed rates</p>
+                    </div>
+                    <div class="component-card" style="--accent: #10b981">
+                        <div class="component-icon">🏭</div>
+                        <h3>ManagedThreadFactory</h3>
+                        <p>Create container-managed threads</p>
+                    </div>
+                    <div class="component-card" style="--accent: #ec4899">
+                        <div class="component-icon">🧩</div>
+                        <h3>ContextService</h3>
+                        <p>Capture & propagate contexts to threads</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== NEW SLIDE 6: INTERACTIVE COMPONENT HUB ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <h2 class="section-title">⚡ Live Demo: The Component Hub</h2>
+
+                <p class="slide-subtitle">Watch how the Jakarta EE Container manages threads in real-time:</p>
+                <div class="component-hub">
+                    <div class="pool-container">
+                        <div class="pool-header">Managed Thread Pool</div>
+                        <div class="thread-slots" id="threadPool">
+                            <!-- Threads will be generated here -->
+                        </div>
+                    </div>
+                    <div class="task-queue-container">
+                        <div class="pool-header">Incoming Task Queue</div>
+                        <div class="task-queue" id="taskQueue">
+                            <!-- Tasks waiting here -->
+                        </div>
+                    </div>
+                    <div class="hub-controls">
+                        <input type="text" id="taskLabel" class="demo-input" placeholder="Task Name (e.g. AuditLog)">
+                        <button class="demo-btn" onclick="hubDemo.addTask()">Submit Managed Task</button>
+                        <button class="demo-btn secondary" onclick="hubDemo.reset()">Reset Pool</button>
+                    </div>
+                    <div class="background-trace" id="hubTrace">
+                        <div class="trace-header">Container Background Trace</div>
+                        <div class="trace-content">Awaiting Managed Task Submission...</div>
+                    </div>
+                </div>
+                <div class="key-point">
+                    <span class="key-icon">📊</span>
+                    <span>The container dynamically scales this pool based on server load and configuration.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 6: ManagedExecutorService EXPLAINED ==================== -->
+        <section class="slide" data-bg="gradient-blue">
+            <div class="slide-content">
+                <div class="badge">Section 02</div>
+                <h2 class="section-title">ManagedExecutorService</h2>
+
+                <div class="split-layout">
+                    <div class="split-left">
+                        <h3>📖 What is it?</h3>
+                        <p>A managed version of <code>java.util.concurrent.ExecutorService</code> that the container
+                            provides. It executes tasks asynchronously while preserving the enterprise context.</p>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="check">✓</span> Inject with <code>@Resource</code>
+                            </div>
+                            <div class="feature-item"><span class="check">✓</span> Submit Runnable & Callable tasks
+                            </div>
+                            <div class="feature-item"><span class="check">✓</span> Returns <code>Future&lt;T&gt;</code>
+                                for results</div>
+                            <div class="feature-item"><span class="check">✓</span> Container handles thread lifecycle
+                            </div>
+                        </div>
+                    </div>
+                    <div class="split-right">
+                        <div class="code-window">
+                            <div class="code-header">
+                                <span class="dot red"></span>
+                                <span class="dot yellow"></span>
+                                <span class="dot green"></span>
+                                <span class="code-title">OrderService.java</span>
+                            </div>
+                            <pre><code><span class="kw">@Stateless</span>
 <span class="kw">public class</span> <span class="cls">OrderService</span> {
 
   <span class="kw">@Resource</span>
@@ -220,46 +275,55 @@
     });
   }
 }</code></pre>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== SLIDE 7: CREATIVE EXAMPLE - PIZZA TRACKER ==================== -->
-    <section class="slide" data-bg="dark">
-        <div class="slide-content">
-            <h2 class="section-title">🍕 Creative Example: Pizza Order Tracker</h2>
-            <p class="slide-subtitle">Imagine a pizza delivery app — when a customer orders, multiple things happen <em>at the same time</em>:</p>
-            <div class="pipeline-visual">
-                <div class="pipeline-step" style="--step-color: #f59e0b">
-                    <div class="step-icon">🧾</div>
-                    <div class="step-label">Save Order</div>
-                    <div class="step-type">Main Thread</div>
+        <!-- ==================== SLIDE 7: CREATIVE EXAMPLE - PIZZA TRACKER ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <h2 class="section-title">🍕 Creative Example: Pizza Order Tracker</h2>
+
+                <p class="slide-subtitle">Imagine a pizza delivery app — when a customer orders, multiple things happen
+                    <em>at the same time</em>:
+                </p>
+                <div class="pipeline-visual">
+                    <div class="pipeline-controls">
+                        <input type="text" id="custName" class="demo-input" placeholder="Customer Name...">
+                        <button class="demo-btn" onclick="pizzaDemo.start()">Place Order</button>
+                    </div>
+                    <div class="viz-row">
+                        <div class="pipeline-step" id="p-save" style="--step-color: #f59e0b">
+                            <div class="step-icon">🧾</div>
+                            <div class="step-label">Save Order</div>
+                            <div class="step-type">Main Thread</div>
+                        </div>
+                        <div class="pipeline-arrow">→</div>
+                        <div class="pipeline-step" id="p-email" style="--step-color: #6366f1">
+                            <div class="step-icon">📧</div>
+                            <div class="step-label">Send Email</div>
+                            <div class="step-type">Async Thread 1</div>
+                        </div>
+                        <div class="pipeline-step" id="p-push" style="--step-color: #10b981">
+                            <div class="step-icon">📱</div>
+                            <div class="step-label">Push Notification</div>
+                            <div class="step-type">Async Thread 2</div>
+                        </div>
+                        <div class="pipeline-step" id="p-kitchen" style="--step-color: #ec4899">
+                            <div class="step-icon">🧑‍🍳</div>
+                            <div class="step-label">Notify Kitchen</div>
+                            <div class="step-type">Async Thread 3</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="pipeline-arrow">→</div>
-                <div class="pipeline-step" style="--step-color: #6366f1">
-                    <div class="step-icon">📧</div>
-                    <div class="step-label">Send Email</div>
-                    <div class="step-type">Async Thread 1</div>
-                </div>
-                <div class="pipeline-step" style="--step-color: #10b981">
-                    <div class="step-icon">📱</div>
-                    <div class="step-label">Push Notification</div>
-                    <div class="step-type">Async Thread 2</div>
-                </div>
-                <div class="pipeline-step" style="--step-color: #ec4899">
-                    <div class="step-icon">🧑‍🍳</div>
-                    <div class="step-label">Notify Kitchen</div>
-                    <div class="step-type">Async Thread 3</div>
-                </div>
-            </div>
-            <div class="code-window small">
-                <div class="code-header">
-                    <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                    <span class="code-title">PizzaOrderService.java</span>
-                </div>
-                <pre><code><span class="kw">@Resource</span> <span class="typ">ManagedExecutorService</span> executor;
+                <div class="code-window small">
+                    <div class="code-header">
+                        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                        <span class="code-title">PizzaOrderService.java</span>
+                    </div>
+                    <pre><code><span class="kw">@Resource</span> <span class="typ">ManagedExecutorService</span> executor;
 
 <span class="kw">public void</span> <span class="fn">orderPizza</span>(<span class="typ">PizzaOrder</span> pizza) {
     orderRepo.<span class="fn">save</span>(pizza);  <span class="cmt">// ← synchronous</span>
@@ -268,33 +332,41 @@
     executor.<span class="fn">submit</span>(() -> pushService.<span class="fn">notify</span>(pizza));    <span class="cmt">// 📱 async</span>
     executor.<span class="fn">submit</span>(() -> kitchenDisplay.<span class="fn">show</span>(pizza));  <span class="cmt">// 🧑‍🍳 async</span>
 }</code></pre>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== SLIDE 8: ManagedScheduledExecutorService ==================== -->
-    <section class="slide" data-bg="gradient-purple">
-        <div class="slide-content">
-            <div class="badge">Section 03</div>
-            <h2 class="section-title">ManagedScheduledExecutorService</h2>
-            <div class="split-layout">
-                <div class="split-left">
-                    <h3>📖 What is it?</h3>
-                    <p>Extends <code>ManagedExecutorService</code> to add scheduling capabilities. You can run tasks after a delay or repeat them at fixed intervals — all container-managed.</p>
-                    <div class="feature-list">
-                        <div class="feature-item"><span class="check">✓</span> <code>schedule()</code> — run once after delay</div>
-                        <div class="feature-item"><span class="check">✓</span> <code>scheduleAtFixedRate()</code> — repeat every N units</div>
-                        <div class="feature-item"><span class="check">✓</span> <code>scheduleWithFixedDelay()</code> — delay between runs</div>
-                        <div class="feature-item"><span class="check">✓</span> Returns <code>ScheduledFuture&lt;T&gt;</code></div>
-                    </div>
                 </div>
-                <div class="split-right">
-                    <div class="code-window">
-                        <div class="code-header">
-                            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                            <span class="code-title">HealthCheckService.java</span>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 8: ManagedScheduledExecutorService ==================== -->
+        <section class="slide" data-bg="gradient-purple">
+            <div class="slide-content">
+                <div class="badge">Section 03</div>
+                <h2 class="section-title">ManagedScheduledExecutorService</h2>
+
+                <div class="split-layout">
+                    <div class="split-left">
+                        <h3>📖 What is it?</h3>
+                        <p>Extends <code>ManagedExecutorService</code> to add scheduling capabilities. You can run tasks
+                            after a delay or repeat them at fixed intervals — all container-managed.</p>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="check">✓</span> <code>schedule()</code> — run once
+                                after delay</div>
+                            <div class="feature-item"><span class="check">✓</span> <code>scheduleAtFixedRate()</code> —
+                                repeat every N units</div>
+                            <div class="feature-item"><span class="check">✓</span> <code>scheduleWithFixedDelay()</code>
+                                — delay between runs</div>
+                            <div class="feature-item"><span class="check">✓</span> Returns
+                                <code>ScheduledFuture&lt;T&gt;</code>
+                            </div>
                         </div>
-                        <pre><code><span class="kw">@Singleton</span>
+                    </div>
+                    <div class="split-right">
+                        <div class="code-window">
+                            <div class="code-header">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="code-title">HealthCheckService.java</span>
+                            </div>
+                            <pre><code><span class="kw">@Singleton</span>
 <span class="kw">@Startup</span>
 <span class="kw">public class</span> <span class="cls">HealthCheckService</span> {
 
@@ -313,40 +385,48 @@
     );
   }
 }</code></pre>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== SLIDE 9: CREATIVE EXAMPLE - STOCK TICKER ==================== -->
-    <section class="slide" data-bg="dark">
-        <div class="slide-content">
-            <h2 class="section-title">📈 Creative Example: Real-Time Stock Ticker</h2>
-            <p class="slide-subtitle">Imagine building a stock price dashboard that refreshes every 5 seconds:</p>
-            <div class="ticker-demo">
-                <div class="ticker-row">
-                    <span class="ticker-symbol">AAPL</span>
-                    <span class="ticker-price up">$189.42</span>
-                    <span class="ticker-change up">▲ +2.31%</span>
+        <!-- ==================== SLIDE 9: CREATIVE EXAMPLE - STOCK TICKER ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <h2 class="section-title">📈 Creative Example: Real-Time Stock Ticker</h2>
+
+                <p class="slide-subtitle">Imagine building a stock price dashboard that refreshes every 5 seconds:</p>
+                <div class="ticker-demo">
+                    <div class="ticker-controls">
+                        <input type="text" id="tickerSym" class="demo-input" placeholder="Symbol (e.g. TSLA)">
+                        <button class="demo-btn small" onclick="tickerDemo.add()">Add Ticker</button>
+                        <button class="demo-btn secondary small" onclick="tickerDemo.toggle()">Toggle Scheduler</button>
+                    </div>
+                    <div id="tickerBody">
+                        <div class="ticker-row">
+                            <span class="ticker-symbol">AAPL</span>
+                            <span class="ticker-price up">$189.42</span>
+                            <span class="ticker-change up">▲ +2.31%</span>
+                        </div>
+                        <div class="ticker-row">
+                            <span class="ticker-symbol">GOOGL</span>
+                            <span class="ticker-price down">$141.80</span>
+                            <span class="ticker-change down">▼ -0.45%</span>
+                        </div>
+                        <div class="ticker-row">
+                            <span class="ticker-symbol">MSFT</span>
+                            <span class="ticker-price up">$378.91</span>
+                            <span class="ticker-change up">▲ +1.12%</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="ticker-row">
-                    <span class="ticker-symbol">GOOGL</span>
-                    <span class="ticker-price down">$141.80</span>
-                    <span class="ticker-change down">▼ -0.45%</span>
-                </div>
-                <div class="ticker-row">
-                    <span class="ticker-symbol">MSFT</span>
-                    <span class="ticker-price up">$378.91</span>
-                    <span class="ticker-change up">▲ +1.12%</span>
-                </div>
-            </div>
-            <div class="code-window small">
-                <div class="code-header">
-                    <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                    <span class="code-title">StockTickerService.java</span>
-                </div>
-                <pre><code><span class="kw">@Resource</span> <span class="typ">ManagedScheduledExecutorService</span> scheduler;
+                <div class="code-window small">
+                    <div class="code-header">
+                        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                        <span class="code-title">StockTickerService.java</span>
+                    </div>
+                    <pre><code><span class="kw">@Resource</span> <span class="typ">ManagedScheduledExecutorService</span> scheduler;
 
 <span class="kw">@PostConstruct</span>
 <span class="kw">public void</span> <span class="fn">startTicker</span>() {
@@ -355,116 +435,129 @@
         wsEndpoint.<span class="fn">broadcastToClients</span>(prices);  <span class="cmt">// Push via WebSocket</span>
     }, <span class="num">0</span>, <span class="num">5</span>, <span class="typ">TimeUnit</span>.SECONDS);  <span class="cmt">// ⏰ Every 5 seconds</span>
 }</code></pre>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== SLIDE 10: ASYNC TASKS ==================== -->
-    <section class="slide" data-bg="gradient-green">
-        <div class="slide-content">
-            <div class="badge">Section 04</div>
-            <h2 class="section-title">Asynchronous Tasks</h2>
-            <div class="concept-visual">
-                <div class="concept-box">
-                    <h3>🔥 Fire-and-Forget</h3>
-                    <p>Submit a task and don't wait for the result. Perfect for logging, emails, analytics.</p>
-                    <div class="mini-code">
-                        <code>executor.<span class="fn">submit</span>(() -> sendEmail());</code>
-                    </div>
-                </div>
-                <div class="concept-box">
-                    <h3>📬 Future-Based</h3>
-                    <p>Submit a task and get a <code>Future&lt;T&gt;</code> to check the result later.</p>
-                    <div class="mini-code">
-                        <code><span class="typ">Future</span>&lt;<span class="typ">Report</span>&gt; f = executor.<span class="fn">submit</span>(() -> generateReport());<br><span class="typ">Report</span> r = f.<span class="fn">get</span>();  <span class="cmt">// blocks until ready</span></code>
-                    </div>
-                </div>
-                <div class="concept-box">
-                    <h3>🔗 CompletableFuture</h3>
-                    <p>Chain multiple async operations in a pipeline.</p>
-                    <div class="mini-code">
-                        <code>executor.<span class="fn">supplyAsync</span>(() -> fetchData())<br>  .<span class="fn">thenApply</span>(data -> transform(data))<br>  .<span class="fn">thenAccept</span>(result -> save(result));</code>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+        <!-- ==================== SLIDE 10: ASYNC TASKS ==================== -->
+        <section class="slide" data-bg="gradient-green">
+            <div class="slide-content">
+                <div class="badge">Section 04</div>
+                <h2 class="section-title">Asynchronous Tasks</h2>
 
-    <!-- ==================== SLIDE 11: SCHEDULED TASKS ==================== -->
-    <section class="slide" data-bg="dark">
-        <div class="slide-content">
-            <h2 class="section-title">⏰ Scheduled Tasks — The Patterns</h2>
-            <div class="schedule-patterns">
-                <div class="pattern-card">
-                    <div class="pattern-header">
-                        <span class="pattern-icon">⏳</span>
-                        <h3>One-Time Delay</h3>
+                <div class="concept-visual">
+                    <div class="concept-box">
+                        <h3>🔥 Fire-and-Forget</h3>
+                        <p>Submit a task and don't wait for the result. Perfect for logging, emails, analytics.</p>
+                        <div class="mini-code">
+                            <code>executor.<span class="fn">submit</span>(() -> sendEmail());</code>
+                        </div>
                     </div>
-                    <div class="pattern-timeline">
-                        <div class="timeline-point start">Now</div>
-                        <div class="timeline-gap">— 10 min delay —</div>
-                        <div class="timeline-point end">▶ Execute!</div>
+                    <div class="concept-box">
+                        <h3>📬 Future-Based</h3>
+                        <p>Submit a task and get a <code>Future&lt;T&gt;</code> to check the result later.</p>
+                        <div class="mini-code">
+                            <code><span class="typ">Future</span>&lt;<span class="typ">Report</span>&gt; f = executor.<span class="fn">submit</span>(() -> generateReport());<br><span class="typ">Report</span> r = f.<span class="fn">get</span>();  <span class="cmt">// blocks until ready</span></code>
+                        </div>
                     </div>
-                    <div class="mini-code"><code>scheduler.<span class="fn">schedule</span>(task, <span class="num">10</span>, MINUTES);</code></div>
-                </div>
-                <div class="pattern-card">
-                    <div class="pattern-header">
-                        <span class="pattern-icon">🔄</span>
-                        <h3>Fixed Rate</h3>
+                    <div class="concept-box">
+                        <h3>🔗 CompletableFuture</h3>
+                        <p>Chain multiple async operations in a pipeline.</p>
+                        <div class="mini-code">
+                            <code>executor.<span class="fn">supplyAsync</span>(() -> fetchData())<br>  .<span class="fn">thenApply</span>(data -> transform(data))<br>  .<span class="fn">thenAccept</span>(result -> save(result));</code>
+                        </div>
                     </div>
-                    <div class="pattern-timeline">
-                        <div class="timeline-point start">▶</div>
-                        <div class="timeline-gap">30s</div>
-                        <div class="timeline-point">▶</div>
-                        <div class="timeline-gap">30s</div>
-                        <div class="timeline-point">▶</div>
-                        <div class="timeline-gap">30s</div>
-                        <div class="timeline-point end">▶ …</div>
-                    </div>
-                    <div class="mini-code"><code>scheduler.<span class="fn">scheduleAtFixedRate</span>(task, <span class="num">0</span>, <span class="num">30</span>, SECONDS);</code></div>
-                </div>
-                <div class="pattern-card">
-                    <div class="pattern-header">
-                        <span class="pattern-icon">⏸️</span>
-                        <h3>Fixed Delay</h3>
-                    </div>
-                    <div class="pattern-timeline">
-                        <div class="timeline-point start">▶ done</div>
-                        <div class="timeline-gap">10s wait</div>
-                        <div class="timeline-point">▶ done</div>
-                        <div class="timeline-gap">10s wait</div>
-                        <div class="timeline-point end">▶ …</div>
-                    </div>
-                    <div class="mini-code"><code>scheduler.<span class="fn">scheduleWithFixedDelay</span>(task, <span class="num">0</span>, <span class="num">10</span>, SECONDS);</code></div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== SLIDE 12: CREATIVE EXAMPLE - SOCIAL MEDIA ==================== -->
-    <section class="slide" data-bg="dark">
-        <div class="slide-content">
-            <h2 class="section-title">💬 Creative Example: Social Media Notifications</h2>
-            <p class="slide-subtitle">A social media platform that batches notifications and sends digest emails every hour:</p>
-            <div class="social-demo">
-                <div class="notification-stack">
-                    <div class="notif-item"><span>❤️</span> Alice liked your post</div>
-                    <div class="notif-item"><span>💬</span> Bob commented on your photo</div>
-                    <div class="notif-item"><span>👤</span> Charlie started following you</div>
-                    <div class="notif-item"><span>🔄</span> Diana shared your story</div>
-                </div>
-                <div class="batch-arrow">📦 Batch every hour →</div>
-                <div class="digest-email">
-                    <div class="email-header">📧 Your hourly digest</div>
-                    <div class="email-body">You have 4 new interactions!</div>
+        <!-- ==================== SLIDE 11: SCHEDULED TASKS ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <h2 class="section-title">⏰ Scheduled Tasks — The Patterns</h2>
+                <div class="schedule-patterns">
+                    <div class="pattern-card">
+                        <div class="pattern-header">
+                            <span class="pattern-icon">⏳</span>
+                            <h3>One-Time Delay</h3>
+                        </div>
+                        <div class="pattern-timeline">
+                            <div class="timeline-point start">Now</div>
+                            <div class="timeline-gap">— 10 min delay —</div>
+                            <div class="timeline-point end">▶ Execute!</div>
+                        </div>
+                        <div class="mini-code">
+                            <code>scheduler.<span class="fn">schedule</span>(task, <span class="num">10</span>, MINUTES);</code>
+                        </div>
+                    </div>
+                    <div class="pattern-card">
+                        <div class="pattern-header">
+                            <span class="pattern-icon">🔄</span>
+                            <h3>Fixed Rate</h3>
+                        </div>
+                        <div class="pattern-timeline">
+                            <div class="timeline-point start">▶</div>
+                            <div class="timeline-gap">30s</div>
+                            <div class="timeline-point">▶</div>
+                            <div class="timeline-gap">30s</div>
+                            <div class="timeline-point">▶</div>
+                            <div class="timeline-gap">30s</div>
+                            <div class="timeline-point end">▶ …</div>
+                        </div>
+                        <div class="mini-code">
+                            <code>scheduler.<span class="fn">scheduleAtFixedRate</span>(task, <span class="num">0</span>, <span class="num">30</span>, SECONDS);</code>
+                        </div>
+                    </div>
+                    <div class="pattern-card">
+                        <div class="pattern-header">
+                            <span class="pattern-icon">⏸️</span>
+                            <h3>Fixed Delay</h3>
+                        </div>
+                        <div class="pattern-timeline">
+                            <div class="timeline-point start">▶ done</div>
+                            <div class="timeline-gap">10s wait</div>
+                            <div class="timeline-point">▶ done</div>
+                            <div class="timeline-gap">10s wait</div>
+                            <div class="timeline-point end">▶ …</div>
+                        </div>
+                        <div class="mini-code">
+                            <code>scheduler.<span class="fn">scheduleWithFixedDelay</span>(task, <span class="num">0</span>, <span class="num">10</span>, SECONDS);</code>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="code-window small">
-                <div class="code-header">
-                    <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                    <span class="code-title">NotificationDigestService.java</span>
+        </section>
+
+        <!-- ==================== SLIDE 12: CREATIVE EXAMPLE - SOCIAL MEDIA ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <h2 class="section-title">💬 Creative Example: Social Media Notifications</h2>
+
+                <p class="slide-subtitle">A social media platform that batches notifications and sends digest emails
+                    every hour:</p>
+                <div class="social-demo">
+                    <div class="social-controls">
+                        <input type="text" id="notifText" class="demo-input"
+                            placeholder="Event (e.g. John liked your post)">
+                        <button class="demo-btn" onclick="socialDemo.post()">Post Event</button>
+                    </div>
+                    <div class="viz-row">
+                        <div class="notification-stack" id="notifStack">
+                            <!-- Events go here -->
+                        </div>
+                        <div class="batch-arrow" id="batchArrow">📦 Queueing...</div>
+                        <div class="digest-email" id="digestEmail">
+                            <div class="email-header">📧 Your Hourly Digest</div>
+                            <div class="email-body">No pending notifications.</div>
+                        </div>
+                    </div>
                 </div>
-                <pre><code><span class="kw">@Resource</span> <span class="typ">ManagedScheduledExecutorService</span> scheduler;
+                <div class="code-window small">
+                    <div class="code-header">
+                        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                        <span class="code-title">NotificationDigestService.java</span>
+                    </div>
+                    <pre><code><span class="kw">@Resource</span> <span class="typ">ManagedScheduledExecutorService</span> scheduler;
 
 <span class="kw">@PostConstruct</span>
 <span class="kw">public void</span> <span class="fn">init</span>() {
@@ -476,70 +569,74 @@
         });
     }, <span class="num">0</span>, <span class="num">1</span>, <span class="typ">TimeUnit</span>.HOURS);
 }</code></pre>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== SLIDE 13: SECURE THREAD MANAGEMENT ==================== -->
-    <section class="slide" data-bg="gradient-orange">
-        <div class="slide-content">
-            <div class="badge">Section 05</div>
-            <h2 class="section-title">🔒 Secure Thread Management</h2>
-            <div class="security-visual">
-                <div class="security-layer">
-                    <h3>What Gets Propagated?</h3>
-                    <div class="context-flow">
-                        <div class="context-source">
-                            <div class="ctx-label">Calling Thread</div>
-                            <div class="ctx-items">
-                                <span class="ctx-tag security">🔐 Security</span>
-                                <span class="ctx-tag jndi">📂 JNDI</span>
-                                <span class="ctx-tag classloader">📦 ClassLoader</span>
-                                <span class="ctx-tag transaction">💰 Transaction*</span>
+        <!-- ==================== SLIDE 13: SECURE THREAD MANAGEMENT ==================== -->
+        <section class="slide" data-bg="gradient-orange">
+            <div class="slide-content">
+                <div class="badge">Section 05</div>
+                <h2 class="section-title">🔒 Secure Thread Management</h2>
+
+                <div class="security-visual">
+                    <div class="security-layer">
+                        <h3>What Gets Propagated?</h3>
+                        <div class="context-flow">
+                            <div class="context-source">
+                                <div class="ctx-label">Calling Thread</div>
+                                <div class="ctx-items">
+                                    <span class="ctx-tag security">🔐 Security</span>
+                                    <span class="ctx-tag jndi">📂 JNDI</span>
+                                    <span class="ctx-tag classloader">📦 ClassLoader</span>
+                                    <span class="ctx-tag transaction">💰 Transaction*</span>
+                                </div>
+                            </div>
+                            <div class="flow-arrow">➡️ Auto-propagated ➡️</div>
+                            <div class="context-dest">
+                                <div class="ctx-label">Managed Thread</div>
+                                <div class="ctx-items">
+                                    <span class="ctx-tag security">🔐 Security ✓</span>
+                                    <span class="ctx-tag jndi">📂 JNDI ✓</span>
+                                    <span class="ctx-tag classloader">📦 ClassLoader ✓</span>
+                                    <span class="ctx-tag transaction dim">💰 New Transaction</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="flow-arrow">➡️ Auto-propagated ➡️</div>
-                        <div class="context-dest">
-                            <div class="ctx-label">Managed Thread</div>
-                            <div class="ctx-items">
-                                <span class="ctx-tag security">🔐 Security ✓</span>
-                                <span class="ctx-tag jndi">📂 JNDI ✓</span>
-                                <span class="ctx-tag classloader">📦 ClassLoader ✓</span>
-                                <span class="ctx-tag transaction dim">💰 New Transaction</span>
-                            </div>
+                        <div class="note-box">
+                            ⚠️ <strong>Note:</strong> Transactions do NOT propagate — each async task gets its own
+                            transaction context. This is by design for data integrity!
                         </div>
-                    </div>
-                    <div class="note-box">
-                        ⚠️ <strong>Note:</strong> Transactions do NOT propagate — each async task gets its own transaction context. This is by design for data integrity!
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== SLIDE 14: CONTEXT SERVICE ==================== -->
-    <section class="slide" data-bg="dark">
-        <div class="slide-content">
-            <h2 class="section-title">🧩 ContextService — Manual Context Capture</h2>
-            <p class="slide-subtitle">Sometimes you need to explicitly capture context — for example, when passing lambdas to non-managed executors:</p>
-            <div class="split-layout">
-                <div class="split-left">
-                    <div class="info-card glass">
-                        <h3>How it works</h3>
-                        <ol class="step-list">
-                            <li><strong>Capture</strong> — Create a contextual proxy of your task</li>
-                            <li><strong>Pass</strong> — Hand the proxy to any executor</li>
-                            <li><strong>Execute</strong> — The proxy restores context before running</li>
-                        </ol>
-                    </div>
-                </div>
-                <div class="split-right">
-                    <div class="code-window">
-                        <div class="code-header">
-                            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                            <span class="code-title">ContextExample.java</span>
+        <!-- ==================== SLIDE 14: CONTEXT SERVICE ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <h2 class="section-title">🧩 ContextService — Manual Context Capture</h2>
+                <p class="slide-subtitle">Sometimes you need to explicitly capture context — for example, when passing
+                    lambdas to non-managed executors:</p>
+                <div class="split-layout">
+                    <div class="split-left">
+                        <div class="info-card glass">
+                            <h3>How it works</h3>
+                            <ol class="step-list">
+                                <li><strong>Capture</strong> — Create a contextual proxy of your task</li>
+                                <li><strong>Pass</strong> — Hand the proxy to any executor</li>
+                                <li><strong>Execute</strong> — The proxy restores context before running</li>
+                            </ol>
                         </div>
-                        <pre><code><span class="kw">@Resource</span>
+                    </div>
+                    <div class="split-right">
+                        <div class="code-window">
+                            <div class="code-header">
+                                <span class="dot red"></span><span class="dot yellow"></span><span
+                                    class="dot green"></span>
+                                <span class="code-title">ContextExample.java</span>
+                            </div>
+                            <pre><code><span class="kw">@Resource</span>
 <span class="typ">ContextService</span> ctxService;
 
 <span class="kw">public void</span> <span class="fn">process</span>() {
@@ -558,23 +655,67 @@
   someExternalExecutor
     .<span class="fn">submit</span>(ctxTask); <span class="cmt">// ✅ Safe!</span>
 }</code></pre>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== SLIDE 15: MANAGED THREAD FACTORY ==================== -->
-    <section class="slide" data-bg="dark">
-        <div class="slide-content">
-            <h2 class="section-title">🏭 ManagedThreadFactory</h2>
-            <p class="slide-subtitle">Need to create individual threads? Use the factory — it creates container-aware threads:</p>
-            <div class="code-window">
-                <div class="code-header">
-                    <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                    <span class="code-title">LongPollingService.java</span>
+        <!-- ==================== NEW SLIDE 16: INTERACTIVE CONTEXT EXPLORER ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <h2 class="section-title">🔐 Live Demo: The Context Passport</h2>
+
+                <p class="slide-subtitle">Interact with the request badge to see how security identity travels into
+                    managed threads:</p>
+                <div class="context-explorer">
+                    <div class="identity-editor">
+                        <input type="text" id="ctxUser" class="demo-input" value="Admin_User" placeholder="User Name">
+                        <select id="ctxRole" class="demo-input">
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="MANAGER">MANAGER</option>
+                            <option value="USER">USER</option>
+                        </select>
+                        <button class="demo-btn" onclick="contextDemo.updateIdentity()">Update Identity</button>
+                    </div>
+                    <div class="viz-row">
+                        <div class="main-thread-zone">
+                            <div class="zone-label">HTTP Request Thread</div>
+                            <div class="passport-card active" id="passport">
+                                <div class="passport-header">Security Context</div>
+                                <div class="passport-field"><span>User:</span> <strong id="p-user">Admin_User</strong>
+                                </div>
+                                <div class="passport-field"><span>Role:</span> <strong id="p-role">ADMIN</strong></div>
+                                <div class="passport-stamp">AUTHENTICATED</div>
+                            </div>
+                        </div>
+                        <div class="propagation-path">
+                            <button class="transmit-btn" onclick="contextDemo.transmit()">Propagate task() →</button>
+                            <div class="path-visual"></div>
+                        </div>
+                        <div class="managed-thread-zone">
+                            <div class="zone-label">Managed Background Thread</div>
+                            <div class="passport-receiver" id="passportReceiver">
+                                <div class="placeholder-text">Waiting for thread lifecycle...</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <pre><code><span class="kw">@Resource</span>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 15: MANAGED THREAD FACTORY ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <h2 class="section-title">🏭 ManagedThreadFactory</h2>
+                <p class="slide-subtitle">Need to create individual threads? Use the factory — it creates
+                    container-aware threads:</p>
+                <div class="code-window">
+                    <div class="code-header">
+                        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                        <span class="code-title">LongPollingService.java</span>
+                    </div>
+                    <pre><code><span class="kw">@Resource</span>
 <span class="typ">ManagedThreadFactory</span> threadFactory;
 
 <span class="kw">public void</span> <span class="fn">startLongPolling</span>() {
@@ -590,55 +731,59 @@
 
 <span class="cmt">// ✅ Thread has JNDI, security context, and classloader</span>
 <span class="cmt">// ✅ Container can monitor and shut down this thread</span></code></pre>
-            </div>
-        </div>
-    </section>
-
-    <!-- ==================== SLIDE 16: USE CASES ==================== -->
-    <section class="slide" data-bg="gradient-teal">
-        <div class="slide-content">
-            <div class="badge">Section 06</div>
-            <h2 class="section-title">Real-World Use Cases</h2>
-            <div class="usecase-grid">
-                <div class="usecase-card">
-                    <div class="usecase-icon">📦</div>
-                    <h3>Batch Processing</h3>
-                    <p>Process thousands of invoices at the end of the month. Split work across multiple managed threads for parallel execution.</p>
-                    <div class="mini-code">
-                        <code>invoices.<span class="fn">parallelStream</span>().<span class="fn">forEach</span>(inv -><br>&nbsp;&nbsp;executor.<span class="fn">submit</span>(() -> process(inv)));</code>
-                    </div>
-                </div>
-                <div class="usecase-card">
-                    <div class="usecase-icon">🔔</div>
-                    <h3>Notifications</h3>
-                    <p>Send push notifications, SMS, or emails without blocking the user's HTTP request thread.</p>
-                    <div class="mini-code">
-                        <code>executor.<span class="fn">submit</span>(() -><br>&nbsp;&nbsp;pushService.<span class="fn">send</span>(userId, message));</code>
-                    </div>
-                </div>
-                <div class="usecase-card">
-                    <div class="usecase-icon">🔄</div>
-                    <h3>Long-Running Tasks</h3>
-                    <p>PDF generation, video transcoding, report building — offload to background threads and notify when done.</p>
-                    <div class="mini-code">
-                        <code><span class="typ">Future</span>&lt;<span class="typ">File</span>&gt; pdf = executor.<span class="fn">submit</span>(<br>&nbsp;&nbsp;() -> pdfEngine.<span class="fn">generate</span>(data));</code>
-                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== SLIDE 17: CREATIVE EXAMPLE - E-COMMERCE ==================== -->
-    <section class="slide" data-bg="dark">
-        <div class="slide-content">
-            <h2 class="section-title">🛒 Full Example: E-Commerce Order Pipeline</h2>
-            <p class="slide-subtitle">Combining everything — a real-world e-commerce backend using Jakarta Concurrency:</p>
-            <div class="code-window">
-                <div class="code-header">
-                    <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-                    <span class="code-title">ECommerceOrderPipeline.java</span>
+        <!-- ==================== SLIDE 16: USE CASES ==================== -->
+        <section class="slide" data-bg="gradient-teal">
+            <div class="slide-content">
+                <div class="badge">Section 06</div>
+                <h2 class="section-title">Real-World Use Cases</h2>
+
+                <div class="usecase-grid">
+                    <div class="usecase-card">
+                        <div class="usecase-icon">📦</div>
+                        <h3>Batch Processing</h3>
+                        <p>Process thousands of invoices at the end of the month. Split work across multiple managed
+                            threads for parallel execution.</p>
+                        <div class="mini-code">
+                            <code>invoices.<span class="fn">parallelStream</span>().<span class="fn">forEach</span>(inv -><br>&nbsp;&nbsp;executor.<span class="fn">submit</span>(() -> process(inv)));</code>
+                        </div>
+                    </div>
+                    <div class="usecase-card">
+                        <div class="usecase-icon">🔔</div>
+                        <h3>Notifications</h3>
+                        <p>Send push notifications, SMS, or emails without blocking the user's HTTP request thread.</p>
+                        <div class="mini-code">
+                            <code>executor.<span class="fn">submit</span>(() -><br>&nbsp;&nbsp;pushService.<span class="fn">send</span>(userId, message));</code>
+                        </div>
+                    </div>
+                    <div class="usecase-card">
+                        <div class="usecase-icon">🔄</div>
+                        <h3>Long-Running Tasks</h3>
+                        <p>PDF generation, video transcoding, report building — offload to background threads and notify
+                            when done.</p>
+                        <div class="mini-code">
+                            <code><span class="typ">Future</span>&lt;<span class="typ">File</span>&gt; pdf = executor.<span class="fn">submit</span>(<br>&nbsp;&nbsp;() -> pdfEngine.<span class="fn">generate</span>(data));</code>
+                        </div>
+                    </div>
                 </div>
-                <pre><code><span class="kw">@Stateless</span>
+            </div>
+        </section>
+
+        <!-- ==================== SLIDE 17: CREATIVE EXAMPLE - E-COMMERCE ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <h2 class="section-title">🛒 Full Example: E-Commerce Order Pipeline</h2>
+                <p class="slide-subtitle">Combining everything — a real-world e-commerce backend using Jakarta
+                    Concurrency:</p>
+                <div class="code-window">
+                    <div class="code-header">
+                        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                        <span class="code-title">ECommerceOrderPipeline.java</span>
+                    </div>
+                    <pre><code><span class="kw">@Stateless</span>
 <span class="kw">public class</span> <span class="cls">ECommerceOrderPipeline</span> {
 
     <span class="kw">@Resource</span> <span class="typ">ManagedExecutorService</span> executor;
@@ -661,52 +806,109 @@
         );
     }
 }</code></pre>
+                </div>
+                <div class="key-point">
+                    <span class="key-icon">🎯</span>
+                    <span>One method, multiple concerns — all handled safely and efficiently by the container!</span>
+                </div>
             </div>
-            <div class="key-point">
-                <span class="key-icon">🎯</span>
-                <span>One method, multiple concerns — all handled safely and efficiently by the container!</span>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ==================== SLIDE 18: SUMMARY & THANK YOU ==================== -->
-    <section class="slide slide-title" data-bg="dark">
-        <div class="particle-bg" id="particles2"></div>
-        <div class="slide-content center-content">
-            <h2 class="section-title">Key Takeaways</h2>
-            <div class="takeaway-grid">
-                <div class="takeaway-item">
-                    <span class="takeaway-icon">🚫</span>
-                    <span>Never use raw <code>new Thread()</code> in Jakarta EE</span>
+        <!-- ==================== NEW SLIDE 20: INTERACTIVE E-COMMERCE HUB ==================== -->
+        <section class="slide" data-bg="dark">
+            <div class="slide-content">
+                <h2 class="section-title">🛒 Live Demo: E-Commerce Pipeline</h2>
+
+                <p class="slide-subtitle">Trigger a full order and watch the concurrent system handle multiple services
+                    simultaneously:</p>
+                <div class="ecommerce-hub">
+                    <div class="order-panel">
+                        <input type="text" id="orderItem" class="demo-input" placeholder="Item (e.g. iPhone 15)">
+                        <select id="orderLoad" class="demo-input">
+                            <option value="1">Normal Traffic</option>
+                            <option value="3">High Load (3 parallel)</option>
+                            <option value="5">Stress Test (5 parallel)</option>
+                        </select>
+                        <button class="order-btn" onclick="ecommerceDemo.placeOrder()">
+                            <span class="btn-icon">📦</span>
+                            Execute Pipeline
+                        </button>
+                        <div class="order-stats">
+                            <div class="stat">Orders: <span id="orderCount">0</span></div>
+                            <div class="stat">Threads Active: <span id="activeThreads">0</span></div>
+                        </div>
+                    </div>
+                    <div class="services-monitor">
+                        <div class="service-strip" id="service-inventory">
+                            <div class="strip-label">Inventory Service</div>
+                            <div class="strip-status">IDLE</div>
+                            <div class="strip-progress"></div>
+                        </div>
+                        <div class="service-strip" id="service-billing">
+                            <div class="strip-label">Billing Service</div>
+                            <div class="strip-status">IDLE</div>
+                            <div class="strip-progress"></div>
+                        </div>
+                        <div class="service-strip" id="service-shipping">
+                            <div class="strip-label">Shipping Service</div>
+                            <div class="strip-status">IDLE</div>
+                            <div class="strip-progress"></div>
+                        </div>
+                        <div class="service-strip" id="service-email">
+                            <div class="strip-label">Email Service</div>
+                            <div class="strip-status">IDLE</div>
+                            <div class="strip-progress"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="takeaway-item">
-                    <span class="takeaway-icon">⚡</span>
-                    <span>Use <code>ManagedExecutorService</code> for async tasks</span>
-                </div>
-                <div class="takeaway-item">
-                    <span class="takeaway-icon">⏰</span>
-                    <span>Use <code>ManagedScheduledExecutorService</code> for timed tasks</span>
-                </div>
-                <div class="takeaway-item">
-                    <span class="takeaway-icon">🔒</span>
-                    <span>Context (security, JNDI) is auto-propagated</span>
-                </div>
-                <div class="takeaway-item">
-                    <span class="takeaway-icon">🎯</span>
-                    <span>Perfect for batch, notifications & long processes</span>
+                <div class="log-window">
+                    <div class="log-header">System Events (Concurrency Log)</div>
+                    <div class="log-entries" id="systemLog">
+                        <div class="log-entry system">System initialized. Waiting for orders...</div>
+                    </div>
                 </div>
             </div>
-            <div class="thank-you-section">
-                <h1 class="hero-title">
-                    <span class="gradient-text">Thank You!</span>
-                </h1>
-                <p class="subtitle">Questions? 🤔</p>
+        </section>
+
+        <!-- ==================== SLIDE 18: SUMMARY & THANK YOU ==================== -->
+        <section class="slide slide-title" data-bg="dark">
+            <div class="particle-bg" id="particles2"></div>
+            <div class="slide-content center-content">
+                <h2 class="section-title">Key Takeaways</h2>
+                <div class="takeaway-grid">
+                    <div class="takeaway-item">
+                        <span class="takeaway-icon">🚫</span>
+                        <span>Never use raw <code>new Thread()</code> in Jakarta EE</span>
+                    </div>
+                    <div class="takeaway-item">
+                        <span class="takeaway-icon">⚡</span>
+                        <span>Use <code>ManagedExecutorService</code> for async tasks</span>
+                    </div>
+                    <div class="takeaway-item">
+                        <span class="takeaway-icon">⏰</span>
+                        <span>Use <code>ManagedScheduledExecutorService</code> for timed tasks</span>
+                    </div>
+                    <div class="takeaway-item">
+                        <span class="takeaway-icon">🔒</span>
+                        <span>Context (security, JNDI) is auto-propagated</span>
+                    </div>
+                    <div class="takeaway-item">
+                        <span class="takeaway-icon">🎯</span>
+                        <span>Perfect for batch, notifications & long processes</span>
+                    </div>
+                </div>
+                <div class="thank-you-section">
+                    <h1 class="hero-title">
+                        <span class="gradient-text">Thank You!</span>
+                    </h1>
+                    <p class="subtitle">Questions? 🤔</p>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-</div>
+    </div>
 
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
+
 </html>
