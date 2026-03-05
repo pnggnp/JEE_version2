@@ -149,7 +149,7 @@
         }
     };
 
-    // ========== HUB DEMO (SECTION 1) - ALEX ==========
+    // ========== HUB DEMO (SECTION 1) ==========
     window.hubDemo = {
         init: function () {
             const pool = document.getElementById('threadPool');
@@ -173,10 +173,19 @@
             queueEl.appendChild(task);
 
             trace('hubTrace', `Managed Task "${label}" submitted to container.`, 'system');
-            this.process();
+
+            fetch('../api/demo/hub', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({taskName: label})
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.process(data);
+            });
             input.value = '';
         },
-        process: function () {
+        process: function (data) {
             const queue = document.getElementById('taskQueue');
             const slots = document.querySelectorAll('.thread-slot');
 
@@ -188,14 +197,13 @@
                         queue.removeChild(taskEl);
 
                         slot.classList.add('active');
-                        slot.textContent = taskName;
-                        trace('hubTrace', `Thread assigned for "${taskName}". Injecting Context...`, 'success');
+                        slot.innerHTML = `<strong>${taskName}</strong><br><small style="font-size:0.6em;opacity:0.8">${data.threadName}</small>`;
+                        trace('hubTrace', `Thread [${data.threadName}] processing "${taskName}"...`, 'success');
 
                         setTimeout(() => {
                             slot.classList.remove('active');
                             slot.textContent = 'IDLE';
                             trace('hubTrace', `Task "${taskName}" completed. Thread returned to pool.`, 'system');
-                            this.process();
                         }, 2000 + Math.random() * 2000);
                         break;
                     }
@@ -208,7 +216,7 @@
         }
     };
 
-    // ========== PIZZA DEMO (SECTION 2) - SARAH ==========
+    // ========== PIZZA DEMO (SECTION 2) ==========
     window.pizzaDemo = {
         start: function () {
             const input = document.getElementById('custName');
@@ -220,42 +228,49 @@
                 if (el) el.classList.remove('active');
             });
 
-            // Step 1: Sync
-            const save = document.getElementById('p-save');
-            if (save) save.classList.add('active');
+            fetch('../api/demo/pizza', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({customerName: name})
+            })
+            .then(r => r.json())
+            .then(data => {
+                const save = document.getElementById('p-save');
+                if (save) {
+                    save.classList.add('active');
+                    save.querySelector('.step-type').textContent = data[0].threadName;
+                }
 
-            setTimeout(() => {
-                // Async steps
-                ['p-email', 'p-push', 'p-kitchen'].forEach((id, i) => {
-                    setTimeout(() => {
-                        const el = document.getElementById(id);
-                        if (el) {
-                            el.classList.add('active');
-                            const label = el.querySelector('.step-label');
-                            if (label && !label.textContent.includes('(')) {
-                                label.textContent += ` (${name})`;
+                setTimeout(() => {
+                    ['p-email', 'p-push', 'p-kitchen'].forEach((id, i) => {
+                        setTimeout(() => {
+                            const el = document.getElementById(id);
+                            if (el) {
+                                el.classList.add('active');
+                                const label = el.querySelector('.step-label');
+                                if (label && !label.textContent.includes('(')) label.textContent += ` (${name})`;
+                                el.querySelector('.step-type').textContent = data[i+1].threadName;
                             }
-                        }
-                    }, i * 400);
-                });
-            }, 800);
+                        }, i * 400);
+                    });
+                }, 800);
+            });
             input.value = '';
         }
     };
 
-    // ========== TICKER DEMO (SECTION 3) - MIKE ==========
+    // ========== TICKER DEMO (SECTION 3) ==========
     window.tickerDemo = {
         running: true,
         add: function () {
             const input = document.getElementById('tickerSym');
             const sym = input.value.toUpperCase();
             if (!sym) return;
-            const row = document.createElement('div');
-            row.className = 'ticker-row';
-            row.innerHTML = `<span class="ticker-symbol">${sym}</span>
-                             <span class="ticker-price up">$${(Math.random() * 500).toFixed(2)}</span>
-                             <span class="ticker-change up">▲ +0.00%</span>`;
-            document.getElementById('tickerBody').prepend(row);
+            fetch('../api/demo/ticker', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({symbol: sym})
+            });
             input.value = '';
         },
         toggle: function () {
@@ -263,40 +278,59 @@
         }
     };
 
-    // ========== SOCIAL DEMO (SECTION 4) - EMMA ==========
+    // ========== SOCIAL DEMO (SECTION 4) ==========
     window.socialDemo = {
-        events: [],
         post: function () {
             const input = document.getElementById('notifText');
             const txt = input.value || 'New Interaction';
-            const stack = document.getElementById('notifStack');
-            if (!stack) return;
-            const item = document.createElement('div');
-            item.className = 'notif-item';
-            item.innerHTML = `<span>🔔</span> ${txt}`;
-            stack.prepend(item);
-            this.events.push(txt);
             input.value = '';
+            
+            fetch('../api/demo/social', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({event: txt})
+            })
+            .then(r => r.json())
+            .then(events => {
+                const stack = document.getElementById('notifStack');
+                if (!stack) return;
+                stack.innerHTML = '';
+                events.forEach(e => {
+                    const item = document.createElement('div');
+                    item.className = 'notif-item';
+                    item.innerHTML = `<span>🔔</span> ${e}`;
+                    stack.prepend(item);
+                });
 
-            if (this.events.length >= 3) this.batch();
+                if (events.length >= 3) this.batch();
+            });
         },
         batch: function () {
             const arrow = document.getElementById('batchArrow');
-            if (!arrow) return;
-            arrow.textContent = '📦 BATCHING...';
-            arrow.style.color = '#f59e0b';
+            if (arrow) {
+                arrow.textContent = '📦 BATCHING (Backend)...';
+                arrow.style.color = '#f59e0b';
+            }
 
             setTimeout(() => {
-                const digest = document.getElementById('digestEmail');
-                const body = digest.querySelector('.email-body');
-                body.innerHTML = `<strong>You have ${this.events.length} new updates:</strong><br>` +
-                    this.events.map(e => `• ${e}`).join('<br>');
-                this.events = [];
-                const stack = document.getElementById('notifStack');
-                if (stack) stack.innerHTML = '';
-                arrow.textContent = '📦 Waiting (1h)';
-                arrow.style.color = '';
-            }, 1500);
+                fetch('../api/demo/social/digest')
+                .then(r => r.json())
+                .then(digest => {
+                    if (digest.length > 0) {
+                        const digestEmail = document.getElementById('digestEmail');
+                        const body = digestEmail.querySelector('.email-body');
+                        body.innerHTML = `<strong>You have ${digest.length} new updates:</strong><br>` +
+                            digest.map(e => `• ${e}`).join('<br>');
+                        
+                        const stack = document.getElementById('notifStack');
+                        if (stack) stack.innerHTML = '';
+                        if (arrow) {
+                            arrow.textContent = '📦 Digest Sent';
+                            arrow.style.color = '#10b981';
+                        }
+                    }
+                });
+            }, 6000);
         }
     };
 
@@ -314,43 +348,64 @@
             setTimeout(() => pass.style.border = '', 500);
         },
         transmit: function () {
+            const user = document.getElementById('p-user').textContent;
+            const role = document.getElementById('p-role').textContent;
             const passport = document.getElementById('passport');
             const receiver = document.getElementById('passportReceiver');
-            const clone = passport.cloneNode(true);
 
-            clone.style.position = 'fixed';
-            const rect = passport.getBoundingClientRect();
-            clone.style.left = rect.left + 'px';
-            clone.style.top = rect.top + 'px';
-            clone.style.width = rect.width + 'px';
-            clone.style.transition = 'all 1s cubic-bezier(0.4, 0, 0.2, 1)';
-            clone.style.zIndex = '1000';
-            document.body.appendChild(clone);
+            fetch('../api/demo/context', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({user: user, role: role})
+            })
+            .then(r => r.json())
+            .then(data => {
+                // Animation Logic
+                const clone = passport.cloneNode(true);
+                clone.style.position = 'fixed';
+                const rect = passport.getBoundingClientRect();
+                clone.style.left = rect.left + 'px';
+                clone.style.top = rect.top + 'px';
+                clone.style.width = rect.width + 'px';
+                clone.style.transition = 'all 1s cubic-bezier(0.4, 0, 0.2, 1)';
+                clone.style.zIndex = '1000';
+                document.body.appendChild(clone);
 
-            setTimeout(() => {
-                const target = receiver.getBoundingClientRect();
-                clone.style.left = (target.left + 20) + 'px';
-                clone.style.top = (target.top + 20) + 'px';
-                clone.style.transform = 'scale(0.5)';
-                clone.style.opacity = '0';
-            }, 100);
+                setTimeout(() => {
+                    const target = receiver.getBoundingClientRect();
+                    clone.style.left = (target.left + 20) + 'px';
+                    clone.style.top = (target.top + 20) + 'px';
+                    clone.style.transform = 'scale(0.5)';
+                    clone.style.opacity = '0';
+                }, 100);
 
-            setTimeout(() => {
-                receiver.innerHTML = '';
-                const final = passport.cloneNode(true);
-                final.style.transform = 'scale(0.7)';
-                final.classList.remove('active');
-                receiver.appendChild(final);
-                document.body.removeChild(clone);
+                setTimeout(() => {
+                    receiver.innerHTML = '';
+                    const final = passport.cloneNode(true);
+                    final.style.transform = 'scale(0.7)';
+                    final.classList.remove('active');
+                    
+                    const stamp = final.querySelector('.passport-stamp');
+                    if(stamp && data.status === 'SUCCESS') {
+                        stamp.textContent = 'CONTEXT RESTORED';
+                        stamp.style.color = '#10b981';
+                        stamp.style.borderColor = '#10b981';
+                    } else if(stamp) {
+                         stamp.textContent = 'FAILED';
+                    }
 
-                const success = document.createElement('div');
-                success.style.color = '#10b981';
-                success.style.fontSize = '12px';
-                success.style.marginTop = '10px';
-                success.style.fontWeight = 'bold';
-                success.textContent = '✓ IDENTITY RESTORED';
-                receiver.appendChild(success);
-            }, 1100);
+                    receiver.appendChild(final);
+                    document.body.removeChild(clone);
+
+                    const success = document.createElement('div');
+                    success.style.color = data.status === 'SUCCESS' ? '#10b981' : '#ef4444';
+                    success.style.fontSize = '12px';
+                    success.style.marginTop = '10px';
+                    success.style.fontWeight = 'bold';
+                    success.textContent = data.status === 'SUCCESS' ? '✓ ' + data.threadName : '✗ ' + data.threadName;
+                    receiver.appendChild(success);
+                }, 1100);
+            });
         }
     };
 
@@ -411,30 +466,26 @@
 
     // ========== TICKER ANIMATION ==========
     function animateTicker() {
-        const body = document.getElementById('tickerBody');
-        if (!body) return;
-
         setInterval(() => {
             if (typeof tickerDemo !== 'undefined' && !tickerDemo.running) return;
-            const prices = body.querySelectorAll('.ticker-price');
-            const changes = body.querySelectorAll('.ticker-change');
-
-            prices.forEach((el, i) => {
-                const curText = el.textContent.replace('$', '');
-                const cur = parseFloat(curText);
-                const variation = (Math.random() - 0.5) * 5;
-                const newPrice = (cur + variation).toFixed(2);
-                const changePercent = ((variation / cur) * 100).toFixed(2);
-                const isUp = variation >= 0;
-
-                el.textContent = '$' + newPrice;
-                el.className = 'ticker-price ' + (isUp ? 'up' : 'down');
-
-                if (changes[i]) {
-                    changes[i].textContent = (isUp ? '▲ +' : '▼ ') + changePercent + '%';
-                    changes[i].className = 'ticker-change ' + (isUp ? 'up' : 'down');
-                }
-            });
+            fetch('../api/demo/ticker')
+            .then(r => r.json())
+            .then(prices => {
+                const body = document.getElementById('tickerBody');
+                if (!body) return;
+                body.innerHTML = '';
+                prices.forEach(p => {
+                    const isUp = p.isUp;
+                    const changeStr = (isUp ? '▲ +' : '▼ ') + p.changePercent.toFixed(2) + '%';
+                    const row = document.createElement('div');
+                    row.className = 'ticker-row';
+                    row.innerHTML = `<span class="ticker-symbol">${p.symbol}</span>
+                                     <span class="ticker-price ${isUp ? 'up' : 'down'}">$${p.price.toFixed(2)}</span>
+                                     <span class="ticker-change ${isUp ? 'up' : 'down'}">${changeStr}</span>`;
+                    body.appendChild(row);
+                });
+            })
+            .catch(e => console.log("Ticker fetch error", e));
         }, 3000);
     }
 
