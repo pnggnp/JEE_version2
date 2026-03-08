@@ -1,5 +1,6 @@
 package tp.jee_presentation_v2.api;
 
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @Path("/demo")
+@RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class ConcurrencyDemoResource {

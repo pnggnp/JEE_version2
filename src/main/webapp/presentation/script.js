@@ -155,7 +155,7 @@
             const pool = document.getElementById('threadPool');
             if (!pool) return;
             pool.innerHTML = '';
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < 8; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'thread-slot';
                 slot.textContent = 'IDLE';
@@ -172,17 +172,13 @@
             task.textContent = label;
             queueEl.appendChild(task);
 
-            trace('hubTrace', `Managed Task "${label}" submitted to container.`, 'system');
+            trace('hubTrace', `📥 Task "${label}" submitted to container queue.`, 'info');
 
-            fetch('../api/demo/hub', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({taskName: label})
-            })
-            .then(res => res.json())
-            .then(data => {
-                this.process(data);
-            });
+            // Simulate server-side processing locally for demo
+            const fakeThreadName = 'managed-thread-' + Math.floor(Math.random() * 4 + 1);
+            setTimeout(() => {
+                this.process({ threadName: fakeThreadName, taskName: label });
+            }, 300);
             input.value = '';
         },
         process: function (data) {
@@ -198,13 +194,18 @@
 
                         slot.classList.add('active');
                         slot.innerHTML = `<strong>${taskName}</strong><br><small style="font-size:0.6em;opacity:0.8">${data.threadName}</small>`;
-                        trace('hubTrace', `Thread [${data.threadName}] processing "${taskName}"...`, 'success');
+                        trace('hubTrace', `🔵 Thread [${data.threadName}] ▶ processing "${taskName}"...`, 'active');
 
                         setTimeout(() => {
                             slot.classList.remove('active');
                             slot.textContent = 'IDLE';
-                            trace('hubTrace', `Task "${taskName}" completed. Thread returned to pool.`, 'system');
-                        }, 2000 + Math.random() * 2000);
+                            trace('hubTrace', `✅ Task "${taskName}" DONE — thread [${data.threadName}] returned to pool`, 'success');
+                            // Try to process queued tasks
+                            if (queue.children.length > 0) {
+                                const nextThread = 'managed-thread-' + Math.floor(Math.random() * 4 + 1);
+                                this.process({ threadName: nextThread });
+                            }
+                        }, 4000 + Math.random() * 2000);
                         break;
                     }
                 }
@@ -230,31 +231,31 @@
 
             fetch('../api/demo/pizza', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({customerName: name})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customerName: name })
             })
-            .then(r => r.json())
-            .then(data => {
-                const save = document.getElementById('p-save');
-                if (save) {
-                    save.classList.add('active');
-                    save.querySelector('.step-type').textContent = data[0].threadName;
-                }
+                .then(r => r.json())
+                .then(data => {
+                    const save = document.getElementById('p-save');
+                    if (save) {
+                        save.classList.add('active');
+                        save.querySelector('.step-type').textContent = data[0].threadName;
+                    }
 
-                setTimeout(() => {
-                    ['p-email', 'p-push', 'p-kitchen'].forEach((id, i) => {
-                        setTimeout(() => {
-                            const el = document.getElementById(id);
-                            if (el) {
-                                el.classList.add('active');
-                                const label = el.querySelector('.step-label');
-                                if (label && !label.textContent.includes('(')) label.textContent += ` (${name})`;
-                                el.querySelector('.step-type').textContent = data[i+1].threadName;
-                            }
-                        }, i * 400);
-                    });
-                }, 800);
-            });
+                    setTimeout(() => {
+                        ['p-email', 'p-push', 'p-kitchen'].forEach((id, i) => {
+                            setTimeout(() => {
+                                const el = document.getElementById(id);
+                                if (el) {
+                                    el.classList.add('active');
+                                    const label = el.querySelector('.step-label');
+                                    if (label && !label.textContent.includes('(')) label.textContent += ` (${name})`;
+                                    el.querySelector('.step-type').textContent = data[i + 1].threadName;
+                                }
+                            }, i * 400);
+                        });
+                    }, 800);
+                });
             input.value = '';
         }
     };
@@ -268,8 +269,8 @@
             if (!sym) return;
             fetch('../api/demo/ticker', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({symbol: sym})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ symbol: sym })
             });
             input.value = '';
         },
@@ -284,26 +285,26 @@
             const input = document.getElementById('notifText');
             const txt = input.value || 'New Interaction';
             input.value = '';
-            
+
             fetch('../api/demo/social', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({event: txt})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ event: txt })
             })
-            .then(r => r.json())
-            .then(events => {
-                const stack = document.getElementById('notifStack');
-                if (!stack) return;
-                stack.innerHTML = '';
-                events.forEach(e => {
-                    const item = document.createElement('div');
-                    item.className = 'notif-item';
-                    item.innerHTML = `<span>🔔</span> ${e}`;
-                    stack.prepend(item);
-                });
+                .then(r => r.json())
+                .then(events => {
+                    const stack = document.getElementById('notifStack');
+                    if (!stack) return;
+                    stack.innerHTML = '';
+                    events.forEach(e => {
+                        const item = document.createElement('div');
+                        item.className = 'notif-item';
+                        item.innerHTML = `<span>🔔</span> ${e}`;
+                        stack.prepend(item);
+                    });
 
-                if (events.length >= 3) this.batch();
-            });
+                    if (events.length >= 3) this.batch();
+                });
         },
         batch: function () {
             const arrow = document.getElementById('batchArrow');
@@ -314,22 +315,22 @@
 
             setTimeout(() => {
                 fetch('../api/demo/social/digest')
-                .then(r => r.json())
-                .then(digest => {
-                    if (digest.length > 0) {
-                        const digestEmail = document.getElementById('digestEmail');
-                        const body = digestEmail.querySelector('.email-body');
-                        body.innerHTML = `<strong>You have ${digest.length} new updates:</strong><br>` +
-                            digest.map(e => `• ${e}`).join('<br>');
-                        
-                        const stack = document.getElementById('notifStack');
-                        if (stack) stack.innerHTML = '';
-                        if (arrow) {
-                            arrow.textContent = '📦 Digest Sent';
-                            arrow.style.color = '#10b981';
+                    .then(r => r.json())
+                    .then(digest => {
+                        if (digest.length > 0) {
+                            const digestEmail = document.getElementById('digestEmail');
+                            const body = digestEmail.querySelector('.email-body');
+                            body.innerHTML = `<strong>You have ${digest.length} new updates:</strong><br>` +
+                                digest.map(e => `• ${e}`).join('<br>');
+
+                            const stack = document.getElementById('notifStack');
+                            if (stack) stack.innerHTML = '';
+                            if (arrow) {
+                                arrow.textContent = '📦 Digest Sent';
+                                arrow.style.color = '#10b981';
+                            }
                         }
-                    }
-                });
+                    });
             }, 6000);
         }
     };
@@ -355,57 +356,57 @@
 
             fetch('../api/demo/context', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({user: user, role: role})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user: user, role: role })
             })
-            .then(r => r.json())
-            .then(data => {
-                // Animation Logic
-                const clone = passport.cloneNode(true);
-                clone.style.position = 'fixed';
-                const rect = passport.getBoundingClientRect();
-                clone.style.left = rect.left + 'px';
-                clone.style.top = rect.top + 'px';
-                clone.style.width = rect.width + 'px';
-                clone.style.transition = 'all 1s cubic-bezier(0.4, 0, 0.2, 1)';
-                clone.style.zIndex = '1000';
-                document.body.appendChild(clone);
+                .then(r => r.json())
+                .then(data => {
+                    // Animation Logic
+                    const clone = passport.cloneNode(true);
+                    clone.style.position = 'fixed';
+                    const rect = passport.getBoundingClientRect();
+                    clone.style.left = rect.left + 'px';
+                    clone.style.top = rect.top + 'px';
+                    clone.style.width = rect.width + 'px';
+                    clone.style.transition = 'all 1s cubic-bezier(0.4, 0, 0.2, 1)';
+                    clone.style.zIndex = '1000';
+                    document.body.appendChild(clone);
 
-                setTimeout(() => {
-                    const target = receiver.getBoundingClientRect();
-                    clone.style.left = (target.left + 20) + 'px';
-                    clone.style.top = (target.top + 20) + 'px';
-                    clone.style.transform = 'scale(0.5)';
-                    clone.style.opacity = '0';
-                }, 100);
+                    setTimeout(() => {
+                        const target = receiver.getBoundingClientRect();
+                        clone.style.left = (target.left + 20) + 'px';
+                        clone.style.top = (target.top + 20) + 'px';
+                        clone.style.transform = 'scale(0.5)';
+                        clone.style.opacity = '0';
+                    }, 100);
 
-                setTimeout(() => {
-                    receiver.innerHTML = '';
-                    const final = passport.cloneNode(true);
-                    final.style.transform = 'scale(0.7)';
-                    final.classList.remove('active');
-                    
-                    const stamp = final.querySelector('.passport-stamp');
-                    if(stamp && data.status === 'SUCCESS') {
-                        stamp.textContent = 'CONTEXT RESTORED';
-                        stamp.style.color = '#10b981';
-                        stamp.style.borderColor = '#10b981';
-                    } else if(stamp) {
-                         stamp.textContent = 'FAILED';
-                    }
+                    setTimeout(() => {
+                        receiver.innerHTML = '';
+                        const final = passport.cloneNode(true);
+                        final.style.transform = 'scale(0.7)';
+                        final.classList.remove('active');
 
-                    receiver.appendChild(final);
-                    document.body.removeChild(clone);
+                        const stamp = final.querySelector('.passport-stamp');
+                        if (stamp && data.status === 'SUCCESS') {
+                            stamp.textContent = 'CONTEXT RESTORED';
+                            stamp.style.color = '#10b981';
+                            stamp.style.borderColor = '#10b981';
+                        } else if (stamp) {
+                            stamp.textContent = 'FAILED';
+                        }
 
-                    const success = document.createElement('div');
-                    success.style.color = data.status === 'SUCCESS' ? '#10b981' : '#ef4444';
-                    success.style.fontSize = '12px';
-                    success.style.marginTop = '10px';
-                    success.style.fontWeight = 'bold';
-                    success.textContent = data.status === 'SUCCESS' ? '✓ ' + data.threadName : '✗ ' + data.threadName;
-                    receiver.appendChild(success);
-                }, 1100);
-            });
+                        receiver.appendChild(final);
+                        document.body.removeChild(clone);
+
+                        const success = document.createElement('div');
+                        success.style.color = data.status === 'SUCCESS' ? '#10b981' : '#ef4444';
+                        success.style.fontSize = '12px';
+                        success.style.marginTop = '10px';
+                        success.style.fontWeight = 'bold';
+                        success.textContent = data.status === 'SUCCESS' ? '✓ ' + data.threadName : '✗ ' + data.threadName;
+                        receiver.appendChild(success);
+                    }, 1100);
+                });
         }
     };
 
@@ -414,40 +415,39 @@
         count: 0,
         placeOrder: function () {
             const itemInput = document.getElementById('orderItem');
-            const item = itemInput.value || 'Order';
+            const item = itemInput.value || 'Batch Job';
             const loadEl = document.getElementById('orderLoad');
             const load = parseInt(loadEl.value);
             this.count++;
-            document.getElementById('orderCount').textContent = this.count;
 
-            for (let i = 0; i < load; i++) {
+            this.log(`📦 Batch "${item}" dispatched with ${load} parallel worker(s)`, 'system');
+
+            const workers = ['inventory', 'billing', 'shipping', 'email'];
+            for (let i = 0; i < Math.min(load, workers.length); i++) {
                 setTimeout(() => {
-                    this.simulate(item + (load > 1 ? ` [SubTask ${i + 1}]` : ''));
-                }, i * 500);
+                    this.simulate(item, workers[i], i + 1);
+                }, i * 400);
             }
-            itemInput.value = '';
         },
-        simulate: function (name) {
-            const services = ['inventory', 'billing', 'shipping', 'email'];
-            const activeEl = document.getElementById('activeThreads');
+        simulate: function (jobName, workerId, workerNum) {
+            const el = document.getElementById('service-' + workerId);
+            if (!el) return;
 
-            services.forEach((s, idx) => {
+            el.classList.add('working');
+            el.querySelector('.strip-status').textContent = 'RUNNING...';
+            this.log(`🔵 Worker ${workerNum} [managed-thread-${workerNum}] ▶ processing "${jobName}"`, 'system');
+
+            setTimeout(() => {
+                el.classList.remove('working');
+                el.querySelector('.strip-status').textContent = 'DONE ✓';
+                el.querySelector('.strip-status').style.color = '#34d399';
+                this.log(`✅ Worker ${workerNum} COMPLETED — thread returned to pool`, 'success');
+
                 setTimeout(() => {
-                    const el = document.getElementById('service-' + s);
-                    if (!el) return;
-                    el.classList.add('working');
-                    el.querySelector('.strip-status').textContent = 'RUNNING...';
-                    activeEl.textContent = parseInt(activeEl.textContent) + 1;
-                    this.log(`Task: ${name} -> Service: ${s.toUpperCase()}`, 'system');
-
-                    setTimeout(() => {
-                        el.classList.remove('working');
-                        el.querySelector('.strip-status').textContent = 'IDLE';
-                        activeEl.textContent = Math.max(0, parseInt(activeEl.textContent) - 1);
-                        this.log(`Task: ${name} -> ${s.toUpperCase()} DONE`, 'success');
-                    }, 2000 + Math.random() * 2000);
-                }, idx * 300);
-            });
+                    el.querySelector('.strip-status').textContent = 'IDLE';
+                    el.querySelector('.strip-status').style.color = '';
+                }, 2000);
+            }, 2500 + Math.random() * 2000);
         },
         log: function (msg, type) {
             const logEl = document.getElementById('systemLog');
@@ -469,23 +469,23 @@
         setInterval(() => {
             if (typeof tickerDemo !== 'undefined' && !tickerDemo.running) return;
             fetch('../api/demo/ticker')
-            .then(r => r.json())
-            .then(prices => {
-                const body = document.getElementById('tickerBody');
-                if (!body) return;
-                body.innerHTML = '';
-                prices.forEach(p => {
-                    const isUp = p.isUp;
-                    const changeStr = (isUp ? '▲ +' : '▼ ') + p.changePercent.toFixed(2) + '%';
-                    const row = document.createElement('div');
-                    row.className = 'ticker-row';
-                    row.innerHTML = `<span class="ticker-symbol">${p.symbol}</span>
+                .then(r => r.json())
+                .then(prices => {
+                    const body = document.getElementById('tickerBody');
+                    if (!body) return;
+                    body.innerHTML = '';
+                    prices.forEach(p => {
+                        const isUp = p.isUp;
+                        const changeStr = (isUp ? '▲ +' : '▼ ') + p.changePercent.toFixed(2) + '%';
+                        const row = document.createElement('div');
+                        row.className = 'ticker-row';
+                        row.innerHTML = `<span class="ticker-symbol">${p.symbol}</span>
                                      <span class="ticker-price ${isUp ? 'up' : 'down'}">$${p.price.toFixed(2)}</span>
                                      <span class="ticker-change ${isUp ? 'up' : 'down'}">${changeStr}</span>`;
-                    body.appendChild(row);
-                });
-            })
-            .catch(e => console.log("Ticker fetch error", e));
+                        body.appendChild(row);
+                    });
+                })
+                .catch(e => console.log("Ticker fetch error", e));
         }, 3000);
     }
 
