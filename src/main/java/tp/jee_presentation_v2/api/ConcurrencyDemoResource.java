@@ -5,7 +5,6 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
 import tp.jee_presentation_v2.dto.TaskResult;
 import tp.jee_presentation_v2.service.*;
 
@@ -32,6 +31,19 @@ public class ConcurrencyDemoResource {
 
     @Inject
     private ContextDemoService contextDemoService;
+
+    @Inject
+    private EcommerceService ecommerceService;
+
+    @POST
+    @Path("/ecommerce")
+    public Response runBatch(Map<String, String> payload) {
+        String jobName = payload.getOrDefault("jobName", "Batch Job");
+        int load = Integer.parseInt(payload.getOrDefault("load", "1"));
+
+        List<TaskResult> results = ecommerceService.processBatch(jobName, load);
+        return Response.ok(results).build();
+    }
 
     @POST
     @Path("/hub")

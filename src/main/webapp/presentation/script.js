@@ -57,8 +57,13 @@
         slideCounter.textContent = (currentSlide + 1) + ' / ' + slides.length;
     }
 
-    function nextSlide() { updateSlide(currentSlide + 1, 'next'); }
-    function prevSlide() { updateSlide(currentSlide - 1, 'prev'); }
+    function nextSlide() {
+        updateSlide(currentSlide + 1, 'next');
+    }
+
+    function prevSlide() {
+        updateSlide(currentSlide - 1, 'prev');
+    }
 
     // Button navigation
     if (prevBtn) prevBtn.addEventListener('click', prevSlide);
@@ -96,7 +101,7 @@
 
     document.addEventListener('touchstart', (e) => {
         touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
+    }, {passive: true});
 
     document.addEventListener('touchend', (e) => {
         touchEndX = e.changedTouches[0].screenX;
@@ -105,7 +110,7 @@
             if (diff > 0) nextSlide();
             else prevSlide();
         }
-    }, { passive: true });
+    }, {passive: true});
 
     // Initialize
     updateProgress();
@@ -177,7 +182,7 @@
             // Simulate server-side processing locally for demo
             const fakeThreadName = 'managed-thread-' + Math.floor(Math.random() * 4 + 1);
             setTimeout(() => {
-                this.process({ threadName: fakeThreadName, taskName: label });
+                this.process({threadName: fakeThreadName, taskName: label});
             }, 300);
             input.value = '';
         },
@@ -203,7 +208,7 @@
                             // Try to process queued tasks
                             if (queue.children.length > 0) {
                                 const nextThread = 'managed-thread-' + Math.floor(Math.random() * 4 + 1);
-                                this.process({ threadName: nextThread });
+                                this.process({threadName: nextThread});
                             }
                         }, 4000 + Math.random() * 2000);
                         break;
@@ -231,8 +236,8 @@
 
             fetch('../api/demo/pizza', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ customerName: name })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({customerName: name})
             })
                 .then(r => r.json())
                 .then(data => {
@@ -269,8 +274,8 @@
             if (!sym) return;
             fetch('../api/demo/ticker', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ symbol: sym })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({symbol: sym})
             });
             input.value = '';
         },
@@ -288,8 +293,8 @@
 
             fetch('../api/demo/social', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ event: txt })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({event: txt})
             })
                 .then(r => r.json())
                 .then(events => {
@@ -356,8 +361,8 @@
 
             fetch('../api/demo/context', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user: user, role: role })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({user: user, role: role})
             })
                 .then(r => r.json())
                 .then(data => {
@@ -410,7 +415,7 @@
         }
     };
 
-    // ========== E-COMMERCE DEMO (SECTION 6) - SOPHIA ==========
+// ========== E-COMMERCE DEMO (SECTION 6) ==========
     window.ecommerceDemo = {
         count: 0,
         placeOrder: function () {
@@ -420,34 +425,47 @@
             const load = parseInt(loadEl.value);
             this.count++;
 
-            this.log(`📦 Batch "${item}" dispatched with ${load} parallel worker(s)`, 'system');
+            this.log(`📦 Batch "${item}" dispatched to server with ${load} parallel worker(s)`, 'system');
 
             const workers = ['inventory', 'billing', 'shipping', 'email'];
+
+            // Set UI to running state instantly
             for (let i = 0; i < Math.min(load, workers.length); i++) {
-                setTimeout(() => {
-                    this.simulate(item, workers[i], i + 1);
-                }, i * 400);
+                const el = document.getElementById('service-' + workers[i]);
+                if (el) {
+                    el.classList.add('working');
+                    el.querySelector('.strip-status').textContent = 'RUNNING...';
+                    this.log(`🔵 Worker ${i + 1} ▶ processing chunk on server...`, 'system');
+                }
             }
-        },
-        simulate: function (jobName, workerId, workerNum) {
-            const el = document.getElementById('service-' + workerId);
-            if (!el) return;
 
-            el.classList.add('working');
-            el.querySelector('.strip-status').textContent = 'RUNNING...';
-            this.log(`🔵 Worker ${workerNum} [managed-thread-${workerNum}] ▶ processing "${jobName}"`, 'system');
+            // Call the real Jakarta EE backend
+            fetch('../api/demo/ecommerce', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({jobName: item, load: load.toString()})
+            })
+                .then(r => r.json())
+                .then(data => {
+                    // Process the real thread results from the server
+                    data.forEach((result, index) => {
+                        const el = document.getElementById('service-' + result.taskName);
+                        if (el) {
+                            el.classList.remove('working');
+                            el.querySelector('.strip-status').textContent = 'DONE ✓';
+                            el.querySelector('.strip-status').style.color = '#34d399';
+                            this.log(`✅ ${result.status} [${result.threadName}] — returned to pool`, 'success');
 
-            setTimeout(() => {
-                el.classList.remove('working');
-                el.querySelector('.strip-status').textContent = 'DONE ✓';
-                el.querySelector('.strip-status').style.color = '#34d399';
-                this.log(`✅ Worker ${workerNum} COMPLETED — thread returned to pool`, 'success');
-
-                setTimeout(() => {
-                    el.querySelector('.strip-status').textContent = 'IDLE';
-                    el.querySelector('.strip-status').style.color = '';
-                }, 2000);
-            }, 2500 + Math.random() * 2000);
+                            setTimeout(() => {
+                                el.querySelector('.strip-status').textContent = 'IDLE';
+                                el.querySelector('.strip-status').style.color = '';
+                            }, 2000);
+                        }
+                    });
+                })
+                .catch(err => {
+                    this.log(`❌ Server connection failed`, 'system');
+                });
         },
         log: function (msg, type) {
             const logEl = document.getElementById('systemLog');
